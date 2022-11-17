@@ -5,6 +5,7 @@
 //! at hand.
 use crate::fs_util;
 use crate::http_util::HeadersMap;
+use deno_core::error::bad_resource;
 use deno_core::error::generic_error;
 use deno_core::error::AnyError;
 use deno_core::serde::Deserialize;
@@ -78,8 +79,10 @@ pub struct HttpCache {
   pub location: PathBuf,
 }
 
+// url is required, all other fields are optional.
 #[derive(Serialize, Deserialize)]
 pub struct Metadata {
+  #[serde(default)]
   pub headers: HeadersMap,
   pub url: String,
   #[serde(default = "SystemTime::now")]
@@ -94,10 +97,14 @@ impl Metadata {
     Ok(())
   }
 
-  pub fn read(cache_filename: &Path) -> Result<Metadata, AnyError> {
+  // TODO(milahu): refactor "fn get" and "fn read"
+  pub fn read(cache_filename: &Path, url: &Url) -> Result<Metadata, AnyError> {
     let metadata_filename = Metadata::filename(cache_filename);
-    let metadata = fs::read_to_string(metadata_filename)?;
-    let metadata: Metadata = serde_json::from_str(&metadata)?;
+    // TODO(milahu): proper transform from path to file:// url string
+    let metadata = fs::read_to_string(&metadata_filename)
+      .map_err(|e| bad_resource(format!("{}. Unable to read metadata for {} from file://{}", e, url, metadata_filename.display())))?;
+    let metadata: Metadata = serde_json::from_str(&metadata)
+      .map_err(|e| bad_resource(format!("{}. Unable to parse metadata for {} from file://{}", e, url, metadata_filename.display())))?;
     Ok(metadata)
   }
 
@@ -141,6 +148,7 @@ impl HttpCache {
   // TODO(bartlomieju): this method should check headers file
   // and validate against ETAG/Last-modified-as headers.
   // ETAG check is currently done in `cli/file_fetcher.rs`.
+  // TODO(milahu): refactor "fn get" and "fn read"
   pub fn get(
     &self,
     url: &Url,
@@ -151,8 +159,11 @@ impl HttpCache {
     );
     let metadata_filename = Metadata::filename(&cache_filename);
     let file = File::open(cache_filename)?;
-    let metadata = fs::read_to_string(metadata_filename)?;
-    let metadata: Metadata = serde_json::from_str(&metadata)?;
+    // TODO(milahu): proper transform from path to file:// url string
+    let metadata = fs::read_to_string(&metadata_filename)
+      .map_err(|e| bad_resource(format!("{}. Unable to read metadata for {} from file://{}", e, url, metadata_filename.display())))?;
+    let metadata: Metadata = serde_json::from_str(&metadata)
+      .map_err(|e| bad_resource(format!("{}. Unable to parse metadata for {} from file://{}", e, url, metadata_filename.display())))?;
     Ok((file, metadata.headers, metadata.now))
   }
 
