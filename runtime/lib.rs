@@ -16,6 +16,7 @@ pub use deno_kv;
 pub use deno_napi;
 pub use deno_net;
 pub use deno_node;
+pub use deno_quic;
 pub use deno_tls;
 pub use deno_url;
 pub use deno_web;
@@ -88,27 +89,32 @@ pub static UNSTABLE_GRANULAR_FLAGS: &[(
     7,
   ),
   (
+    deno_quic::UNSTABLE_FEATURE_NAME,
+    "Enable unstable QUIC API",
+    8,
+  ),
+  (
     "temporal",
     "Enable unstable Temporal API",
     // Not used in JS
-    8,
+    9,
   ),
   (
     "unsafe-proto",
     "Enable unsafe __proto__ support. This is a security risk.",
     // This number is used directly in the JS code. Search
     // for "unstableIds" to see where it's used.
-    9,
+    10,
   ),
   (
     deno_webgpu::UNSTABLE_FEATURE_NAME,
     "Enable unstable `WebGPU` API",
-    10,
+    11,
   ),
   (
     ops::worker_host::UNSTABLE_FEATURE_NAME,
     "Enable unstable Web Worker APIs",
-    11,
+    12,
   ),
 ];
 

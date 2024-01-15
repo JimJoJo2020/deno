@@ -442,6 +442,10 @@ impl WebWorker {
         options.unsafely_ignore_certificate_errors.clone(),
       ),
       deno_tls::deno_tls::init_ops_and_esm(),
+      deno_quic::deno_quic::init_ops_and_esm::<PermissionsContainer>(
+        options.root_cert_store_provider.clone(),
+        options.unsafely_ignore_certificate_errors.clone(),
+      ),
       deno_kv::deno_kv::init_ops_and_esm(
         MultiBackendDbHandler::remote_or_sqlite::<PermissionsContainer>(
           None,
