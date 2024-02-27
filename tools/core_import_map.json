@@ -21,6 +21,7 @@
     "ext:deno_kv/01_db.ts": "../ext/kv/01_db.ts",
     "ext:deno_net/01_net.js": "../ext/net/01_net.js",
     "ext:deno_net/02_tls.js": "../ext/net/02_tls.js",
+    "ext:deno_quic/01_net.js": "../ext/quic/01_quic.js",
     "ext:deno_node/_events.d.ts": "../ext/node/polyfills/_events.d.ts",
     "ext:deno_node/_fs/_fs_close.ts": "../ext/node/polyfills/_fs/_fs_close.ts",
     "ext:deno_node/_fs/_fs_common.ts": "../ext/node/polyfills/_fs/_fs_common.ts",

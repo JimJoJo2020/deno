@@ -25,6 +25,7 @@ import * as fsEvents from "ext:runtime/40_fs_events.js";
 import * as process from "ext:runtime/40_process.js";
 import * as signals from "ext:runtime/40_signals.js";
 import * as tty from "ext:runtime/40_tty.js";
+import * as quic from "ext:deno_quic/01_quic.js";
 // TODO(bartlomieju): this is funky we have two `http` imports
 import * as httpRuntime from "ext:runtime/40_http.js";
 import * as kv from "ext:deno_kv/01_db.ts";
@@ -259,10 +260,11 @@ const unstableIds = {
   http: 5,
   kv: 6,
   net: 7,
-  temporal: 8,
-  unsafeProto: 9,
-  webgpu: 10,
-  workerOptions: 11,
+  quic: 8,
+  temporal: 9,
+  unsafeProto: 10,
+  webgpu: 11,
+  workerOptions: 12,
 };
 
 const denoNsUnstableById = {};
@@ -319,6 +321,16 @@ denoNsUnstableById[unstableIds.webgpu] = {
 
 // denoNsUnstableById[unstableIds.workerOptions] = {}
 
+denoNsUnstableById[unstableIds.quic] = {
+  connectQuic: quic.connectQuic,
+  listenQuic: quic.listenQuic,
+  QuicBidirectionalStream: quic.QuicBidirectionalStream,
+  QuicConn: quic.QuicConn,
+  QuicListener: quic.QuicListener,
+  QuicReceiveStream: quic.QuicReceiveStream,
+  QuicSendStream: quic.QuicSendStream,
+};
+
 // when editing this list, also update unstableDenoProps in cli/tsc/99_main_compiler.js
 const denoNsUnstable = {
   listenDatagram: net.createListenDatagram(
@@ -346,6 +358,13 @@ const denoNsUnstable = {
   KvU64: kv.KvU64,
   KvListIterator: kv.KvListIterator,
   cron: cron.cron,
+  connectQuic: quic.connectQuic,
+  listenQuic: quic.listenQuic,
+  QuicBidirectionalStream: quic.QuicBidirectionalStream,
+  QuicConn: quic.QuicConn,
+  QuicListener: quic.QuicListener,
+  QuicReceiveStream: quic.QuicReceiveStream,
+  QuicSendStream: quic.QuicSendStream,
 };
 
 export { denoNs, denoNsUnstable, denoNsUnstableById, unstableIds };

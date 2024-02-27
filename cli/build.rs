@@ -160,6 +160,7 @@ mod ts {
       deno_broadcast_channel::get_declaration(),
     );
     op_crate_libs.insert("deno.net", deno_net::get_declaration());
+    op_crate_libs.insert("deno.quic", deno_quic::get_declaration());
 
     // ensure we invalidate the build properly.
     for (_, path) in op_crate_libs.iter() {

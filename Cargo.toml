@@ -21,6 +21,7 @@ members = [
   "ext/napi",
   "ext/net",
   "ext/node",
+  "ext/quic",
   "ext/url",
   "ext/web",
   "ext/webgpu",
@@ -74,6 +75,7 @@ deno_kv = { version = "0.47.0", path = "./ext/kv" }
 deno_napi = { version = "0.69.0", path = "./ext/napi" }
 deno_net = { version = "0.131.0", path = "./ext/net" }
 deno_node = { version = "0.76.0", path = "./ext/node" }
+deno_quic = { version = "0.1.0", path = "./ext/quic" }
 deno_tls = { version = "0.126.0", path = "./ext/tls" }
 deno_url = { version = "0.139.0", path = "./ext/url" }
 deno_web = { version = "0.170.0", path = "./ext/web" }
@@ -140,6 +142,7 @@ pin-project = "1.0.11" # don't pin because they yank crates from cargo
 pretty_assertions = "=1.4.0"
 prost = "0.11"
 prost-build = "0.11"
+quinn = { version = "=0.10.2", default-features = false, features = ["runtime-tokio", "tls-rustls"] }
 rand = "=0.8.5"
 regex = "^1.7.0"
 reqwest = { version = "=0.11.20", default-features = false, features = ["rustls-tls", "stream", "gzip", "brotli", "socks", "json"] } # pinned because of https://github.com/seanmonstar/reqwest/pull/1955
@@ -257,6 +260,8 @@ opt-level = 3
 opt-level = 3
 [profile.bench.package.deno_net]
 opt-level = 3
+[profile.bench.package.deno_quic]
+opt-level = 3
 [profile.bench.package.deno_crypto]
 opt-level = 3
 [profile.bench.package.deno_node]
@@ -312,6 +317,8 @@ opt-level = 3
 [profile.release.package.deno_http]
 opt-level = 3
 [profile.release.package.deno_net]
+opt-level = 3
+[profile.release.package.deno_quic]
 opt-level = 3
 [profile.release.package.deno_web]
 opt-level = 3

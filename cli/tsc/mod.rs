@@ -97,6 +97,7 @@ pub fn get_types_declaration_file_text() -> String {
     "deno.crypto",
     "deno.broadcast_channel",
     "deno.net",
+    "deno.quic",
     "deno.shared_globals",
     "deno.cache",
     "deno.window",

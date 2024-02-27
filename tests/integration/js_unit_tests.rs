@@ -111,6 +111,7 @@ util::unit_test_factory!(
     worker_test,
     write_file_test,
     write_text_file_test,
+    quic_test,
   ]
 );
 

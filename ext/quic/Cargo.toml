@@ -1,0 +1,22 @@
+# Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+[package]
+name = "deno_quic"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+readme = "README.md"
+repository.workspace = true
+description = "QUIC for Deno"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+deno_core.workspace = true
+deno_net.workspace = true
+deno_tls.workspace = true
+quinn.workspace = true
+rustls.workspace = true
+serde.workspace = true
