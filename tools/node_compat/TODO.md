@@ -2839,7 +2839,6 @@ Total: 2998
 - [pseudo-tty/test-trace-sigint-disabled.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-trace-sigint-disabled.js)
 - [pseudo-tty/test-trace-sigint-on-idle.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-trace-sigint-on-idle.js)
 - [pseudo-tty/test-trace-sigint.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-trace-sigint.js)
-- [pseudo-tty/test-tty-color-support.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-tty-color-support.js)
 - [pseudo-tty/test-tty-isatty.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-tty-isatty.js)
 - [pseudo-tty/test-tty-stdin-call-end.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-tty-stdin-call-end.js)
 - [pseudo-tty/test-tty-stdout-resize.js](https://github.com/nodejs/node/tree/v18.12.1/test/pseudo-tty/test-tty-stdout-resize.js)
