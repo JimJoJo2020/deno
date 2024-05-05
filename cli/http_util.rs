@@ -15,6 +15,7 @@ use deno_runtime::deno_fetch::create_http_client;
 use deno_runtime::deno_fetch::reqwest;
 use deno_runtime::deno_fetch::reqwest::header::LOCATION;
 use deno_runtime::deno_fetch::reqwest::Response;
+use deno_runtime::deno_fetch::reqwest_middleware;
 use deno_runtime::deno_fetch::CreateHttpClientOptions;
 use deno_runtime::deno_tls::RootCertStoreProvider;
 use std::collections::HashMap;
@@ -222,7 +223,7 @@ impl CacheSemantics {
 pub struct HttpClient {
   options: CreateHttpClientOptions,
   root_cert_store_provider: Option<Arc<dyn RootCertStoreProvider>>,
-  cell: once_cell::sync::OnceCell<reqwest::Client>,
+  cell: once_cell::sync::OnceCell<reqwest_middleware::ClientWithMiddleware>,
 }
 
 impl std::fmt::Debug for HttpClient {
@@ -249,7 +250,7 @@ impl HttpClient {
   }
 
   #[cfg(test)]
-  pub fn from_client(client: reqwest::Client) -> Self {
+  pub fn from_client(client: reqwest_middleware::ClientWithMiddleware) -> Self {
     let result = Self {
       options: Default::default(),
       root_cert_store_provider: Default::default(),
@@ -259,7 +260,9 @@ impl HttpClient {
     result
   }
 
-  pub(crate) fn client(&self) -> Result<&reqwest::Client, AnyError> {
+  pub(crate) fn client(
+    &self,
+  ) -> Result<&reqwest_middleware::ClientWithMiddleware, AnyError> {
     self.cell.get_or_try_init(|| {
       create_http_client(
         get_user_agent(),
@@ -278,7 +281,7 @@ impl HttpClient {
   pub fn get_no_redirect<U: reqwest::IntoUrl>(
     &self,
     url: U,
-  ) -> Result<reqwest::RequestBuilder, AnyError> {
+  ) -> Result<reqwest_middleware::RequestBuilder, AnyError> {
     Ok(self.client()?.get(url))
   }
 
@@ -390,6 +393,11 @@ pub async fn get_response_body_with_progress(
 mod test {
   use super::*;
 
+  use deno_runtime::deno_fetch::reqwest_middleware;
+  use std::sync::Arc;
+  use std::sync::Mutex;
+  use task_local_extensions;
+
   #[tokio::test]
   async fn test_http_client_download_redirect() {
     let _http_server_guard = test_util::http_server();
@@ -409,6 +417,56 @@ mod test {
       .err()
       .unwrap();
     assert_eq!(err.to_string(), "Too many redirects.");
+  }
+
+  #[tokio::test]
+  async fn test_http_client_middleware() {
+    // set up a middleware with a counter
+    struct CountingMiddleware {
+      count: Arc<Mutex<i32>>,
+    }
+
+    impl CountingMiddleware {
+      fn increment(&self) {
+        if let Ok(mut count) = self.count.lock() {
+          *count += 1;
+        }
+      }
+    }
+
+    #[async_trait::async_trait]
+    impl reqwest_middleware::Middleware for CountingMiddleware {
+      async fn handle(
+        &self,
+        req: reqwest::Request,
+        extensions: &mut task_local_extensions::Extensions,
+        next: reqwest_middleware::Next<'_>,
+      ) -> reqwest_middleware::Result<reqwest::Response> {
+        self.increment();
+        next.run(req, extensions).await
+      }
+    }
+
+    let _http_server_guard = test_util::http_server();
+
+    let count = Arc::new(Mutex::new(0));
+    let middleware = CountingMiddleware {
+      count: count.clone(),
+    };
+
+    deno_runtime::deno_fetch::add_middleware(Arc::new(middleware)).unwrap();
+    let client = HttpClient::new(None, None);
+    // make a request to the server and expect a 404 Not found
+    let err = client
+      .download_text("http://localhost:4545/")
+      .await
+      .err()
+      .unwrap();
+    deno_runtime::deno_fetch::clear_middleware().unwrap();
+
+    assert_eq!(err.to_string(), "Not found.");
+    // check that the middleware has been called once
+    assert!(*count.lock().unwrap() > 0);
   }
 
   #[test]
