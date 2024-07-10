@@ -32,6 +32,7 @@ use crate::args::CliLockfile;
 use crate::args::NpmProcessState;
 use crate::args::NpmProcessStateKind;
 use crate::args::PackageJsonInstallDepsProvider;
+use crate::args::PackagesAllowedScripts;
 use crate::cache::FastInsecureHasher;
 use crate::http_util::HttpClientProvider;
 use crate::util::fs::canonicalize_path_maybe_not_exists_with_fs;
@@ -70,6 +71,7 @@ pub struct CliNpmResolverManagedCreateOptions {
   pub npm_system_info: NpmSystemInfo,
   pub package_json_deps_provider: Arc<PackageJsonInstallDepsProvider>,
   pub npmrc: Arc<ResolvedNpmRc>,
+  pub allowed_scripts: PackagesAllowedScripts,
 }
 
 pub async fn create_managed_npm_resolver_for_lsp(
@@ -98,6 +100,7 @@ pub async fn create_managed_npm_resolver_for_lsp(
       options.maybe_node_modules_path,
       options.npm_system_info,
       snapshot,
+      options.allowed_scripts,
     )
   })
   .await
@@ -122,6 +125,7 @@ pub async fn create_managed_npm_resolver(
     options.maybe_node_modules_path,
     options.npm_system_info,
     snapshot,
+    options.allowed_scripts,
   ))
 }
 
@@ -138,6 +142,7 @@ fn create_inner(
   node_modules_dir_path: Option<PathBuf>,
   npm_system_info: NpmSystemInfo,
   snapshot: Option<ValidSerializedNpmResolutionSnapshot>,
+  allowed_scripts: PackagesAllowedScripts,
 ) -> Arc<dyn CliNpmResolver> {
   let resolution = Arc::new(NpmResolution::from_serialized(
     npm_api.clone(),
@@ -160,6 +165,7 @@ fn create_inner(
     tarball_cache.clone(),
     node_modules_dir_path,
     npm_system_info.clone(),
+    allowed_scripts.clone(),
   );
   Arc::new(ManagedCliNpmResolver::new(
     fs,
@@ -172,6 +178,7 @@ fn create_inner(
     tarball_cache,
     text_only_progress_bar,
     npm_system_info,
+    allowed_scripts,
   ))
 }
 
@@ -258,6 +265,7 @@ pub struct ManagedCliNpmResolver {
   text_only_progress_bar: ProgressBar,
   npm_system_info: NpmSystemInfo,
   top_level_install_flag: AtomicFlag,
+  allowed_scripts: PackagesAllowedScripts,
 }
 
 impl std::fmt::Debug for ManagedCliNpmResolver {
@@ -281,6 +289,7 @@ impl ManagedCliNpmResolver {
     tarball_cache: Arc<TarballCache>,
     text_only_progress_bar: ProgressBar,
     npm_system_info: NpmSystemInfo,
+    allowed_scripts: PackagesAllowedScripts,
   ) -> Self {
     Self {
       fs,
@@ -294,6 +303,7 @@ impl ManagedCliNpmResolver {
       tarball_cache,
       npm_system_info,
       top_level_install_flag: Default::default(),
+      allowed_scripts,
     }
   }
 
@@ -578,6 +588,7 @@ impl CliNpmResolver for ManagedCliNpmResolver {
         self.tarball_cache.clone(),
         self.root_node_modules_path().map(ToOwned::to_owned),
         self.npm_system_info.clone(),
+        self.allowed_scripts.clone(),
       ),
       self.maybe_lockfile.clone(),
       self.npm_api.clone(),
@@ -587,6 +598,7 @@ impl CliNpmResolver for ManagedCliNpmResolver {
       self.tarball_cache.clone(),
       self.text_only_progress_bar.clone(),
       self.npm_system_info.clone(),
+      self.allowed_scripts.clone(),
     ))
   }
 
